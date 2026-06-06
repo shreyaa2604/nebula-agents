@@ -104,6 +104,27 @@ agents:
       - {PRODUCT_ROOT}/planning-mds/features/**/STATUS.md          # AI progress, validation evidence
       - {PRODUCT_ROOT}/planning-mds/features/**/GETTING-STARTED.md  # key files, verification steps
 
+  data-engineer:
+    skill: agents/data-engineer/SKILL.md
+    condition: scope includes data mapping, ETL, deduplication, data fabric, data quality, or {PRODUCT_ROOT}/dataflow/
+    reads:
+      - {PRODUCT_ROOT}/planning-mds/BLUEPRINT.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/SOLUTION-PATTERNS.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-fabric.md
+      - {PRODUCT_ROOT}/planning-mds/knowledge-graph/**
+      - {PRODUCT_ROOT}/planning-mds/api/*.yaml
+      - {PRODUCT_ROOT}/planning-mds/schemas/**
+      - {PRODUCT_ROOT}/planning-mds/features/**
+      - agents/data-engineer/references/**
+      - agents/architect/references/data-contract-patterns.md
+      - agents/architect/references/data-modeling-guide.md
+    writes:
+      - {PRODUCT_ROOT}/dataflow/**
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-fabric.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-lineage.md
+      - {PRODUCT_ROOT}/planning-mds/features/**/STATUS.md          # data progress, validation evidence
+      - {PRODUCT_ROOT}/planning-mds/features/**/GETTING-STARTED.md  # key files, verification steps
+
   quality-engineer:
     skill: agents/quality-engineer/SKILL.md
     reads:
@@ -256,6 +277,7 @@ actions:
           - backend-developer
           - frontend-developer
           - ai-engineer              # conditional — see agent definition
+          - data-engineer            # conditional — when data scope exists
           - quality-engineer
           - devops
       - gate: self-review
@@ -286,6 +308,7 @@ actions:
           - backend-developer
           - frontend-developer
           - ai-engineer              # conditional — see agent definition
+          - data-engineer            # conditional — when data scope exists
           - quality-engineer
           - devops
       - gate: self-review
@@ -372,7 +395,7 @@ boundary:
     - {PRODUCT_ROOT}/planning-mds/ is solution-specific — no generic best practices
     - agents must not invent requirements (PM owns scope)
     - agents must not change architecture (Architect owns decisions)
-    - implementation agents write only to their layer ({PRODUCT_ROOT}/engine/ | {PRODUCT_ROOT}/experience/ | {PRODUCT_ROOT}/neuron/) + STATUS.md
+    - implementation agents write only to their layer ({PRODUCT_ROOT}/engine/ | {PRODUCT_ROOT}/experience/ | {PRODUCT_ROOT}/neuron/ | {PRODUCT_ROOT}/dataflow/) + STATUS.md
     - review agents (code-reviewer, security) produce reports, not code; write signoff provenance to STATUS.md
     - STATUS.md is the shared progress/signoff artifact — all agents update their section only
     - tracker-sync is mandatory before any action completion that changes features

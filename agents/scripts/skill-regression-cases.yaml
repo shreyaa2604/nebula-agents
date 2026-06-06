@@ -20,6 +20,13 @@ cases:
     prompt: "Integrate an LLM workflow and expose MCP tools for this assistant."
     expected_skill: ai-engineer
 
+  - id: data_engineer_dedup_pipeline
+    prompt: "Build an ETL data pipeline with source-to-target mapping, embedding deduplication, lineage, and data quality checks."
+    expected_skill: data-engineer
+    forbidden_skills:
+      - ai-engineer
+      - backend-developer
+
   - id: qe_e2e
     prompt: "Create end-to-end tests, validate coverage, and run performance tests."
     expected_skill: quality-engineer

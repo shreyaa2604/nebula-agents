@@ -20,8 +20,8 @@ See the framework root `README.md` and `CONSUMER-CONTRACT.md` for the full consu
 │                                                                              │
 │  init       │ Bootstrap product structure in {PRODUCT_ROOT}                 │
 │  plan       │ Phase A (PM) → Phase B (Architect) [2 approval gates]         │
-│  build      │ Backend + Frontend + AI* + QA + DevOps → Review [2 gates]     │
-│  feature    │ Single vertical slice (Backend + Frontend + AI* + QA + DevOps) │
+│  build      │ Backend + Frontend + AI* + Data* + QA + DevOps → Review       │
+│  feature    │ Single vertical slice (Backend + Frontend + AI* + Data* + QA) │
 │  review     │ Code Reviewer + Security [1 gate]                             │
 │  validate   │ Architect + PM validation (read-only)                         │
 │  test       │ Quality Engineer testing workflow                             │
@@ -29,12 +29,12 @@ See the framework root `README.md` and `CONSUMER-CONTRACT.md` for the full consu
 │  blog       │ Blogger dev logs & articles                                   │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
-* AI Engineer runs when stories include AI/LLM/MCP scope. Architect orchestrates implementation sequencing.
+* AI Engineer runs when stories include AI/LLM/MCP scope. Data Engineer runs when stories include data integration, mapping, deduplication, or data quality scope. Architect orchestrates implementation sequencing.
                                         ↓
                               Actions compose Agents
                                         ↓
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  AGENTS (Role-Based Specialists) — 11 Agents                                │
+│  AGENTS (Role-Based Specialists) — 12 Agents                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  Planning Phase (Phase A-B)                                                 │
@@ -45,6 +45,7 @@ See the framework root `README.md` and `CONSUMER-CONTRACT.md` for the full consu
 │  ├─ backend-developer  │ Backend services, domain logic ({PRODUCT_ROOT}/engine/)       │
 │  ├─ frontend-developer │ UI, forms, API wiring ({PRODUCT_ROOT}/experience/)            │
 │  ├─ ai-engineer        │ LLMs, agents, MCP, workflows ({PRODUCT_ROOT}/neuron/) 🧠       │
+│  ├─ data-engineer      │ Data fabric, mapping, dedup, ETL pipelines ({PRODUCT_ROOT}/dataflow/) │
 │  ├─ quality-engineer   │ Unit, integration, E2E tests                       │
 │  └─ devops             │ Docker, docker-compose, deployment                 │
 │                                                                              │
@@ -86,7 +87,7 @@ See the framework root `README.md` and `CONSUMER-CONTRACT.md` for the full consu
 
 ─────────────────────────────────────────────────────────────────────────────
 
-  9 Actions · 11 Agents · 1 Source of Truth (BLUEPRINT.md)
+  9 Actions · 12 Agents · 1 Source of Truth (BLUEPRINT.md)
   SOLUTION-PATTERNS.md for institutional knowledge
   {PRODUCT_ROOT}/neuron/ for AI intelligence layer 🧠
 ```
@@ -122,7 +123,7 @@ Framework-repo-level files that stay in `nebula-agents` and apply to the framewo
 
 ## Context Efficiency
 
-20,700+ lines of reference docs across 11 roles. Do not load all references
+20,700+ lines of reference docs across 12 roles. Do not load all references
 for a role — load the task-matched subset.
 
 - **[ROUTER.md](./ROUTER.md)** — maps task types to the specific reference

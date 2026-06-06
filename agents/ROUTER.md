@@ -1,6 +1,6 @@
 # Reference Router
 
-20,700+ lines of reference docs across 11 agent roles. Loading all references
+20,700+ lines of reference docs across 12 agent roles. Loading all references
 for a role wastes context on material irrelevant to the current task.
 
 **Rule**: Before loading any file from `agents/<role>/references/`, consult
@@ -96,6 +96,17 @@ All paths relative to `agents/backend-developer/`.
 | Python AI/LLM implementation | `references/code-patterns.md` |
 
 All paths relative to `agents/ai-engineer/`.
+
+## Data Engineer (400-700 lines per task)
+
+| Task | References to Load |
+|------|--------------------|
+| Data pipeline implementation, ETL/ELT | `references/code-patterns.md` |
+| Data fabric architecture, metadata catalog | `references/data-fabric-patterns.md` |
+| Fuzzy deduplication, embedding matching, entity resolution | `references/fuzzy-matching-guide.md` |
+| Source-to-target mapping, schema reconciliation | `references/data-mapping-patterns.md` |
+
+All paths relative to `agents/data-engineer/`.
 
 ## Quality Engineer (577 lines → ~555 per task)
 

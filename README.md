@@ -75,8 +75,8 @@ The framework has two views: a **composition model** (how actions compose agents
 │                                                                             │
 │  init       │ Bootstrap project structure                                   │
 │  plan       │ Phase A (PM) → Phase B (Architect) [2 approval gates]         │
-│  build      │ Backend + Frontend + AI* + QA + DevOps → Review [2 gates]     │
-│  feature    │ Single vertical slice (Backend + Frontend + AI* + QA + DevOps)│
+│  build      │ Backend + Frontend + AI* + Data* + QA + DevOps → Review       │
+│  feature    │ Single vertical slice (Backend + Frontend + AI* + Data* + QA) │
 │  review     │ Code Reviewer + Security [1 gate]                             │
 │  validate   │ Architect + PM validation (read-only)                         │
 │  test       │ Quality Engineer testing workflow                             │
@@ -84,12 +84,12 @@ The framework has two views: a **composition model** (how actions compose agents
 │  blog       │ Blogger dev logs & articles                                   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
-* AI Engineer runs when stories include AI/LLM/MCP scope. Architect owns implementation orchestration.
+* AI Engineer runs when stories include AI/LLM/MCP scope. Data Engineer runs when stories include data integration, mapping, deduplication, or data quality scope. Architect owns implementation orchestration.
                                         ↓
                               Actions compose Agents
                                         ↓
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  AGENTS (Role-Based Specialists) — 11 Agents                                │
+│  AGENTS (Role-Based Specialists) — 12 Agents                                │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  Planning Phase (Phase A-B)                                                 │
@@ -100,6 +100,7 @@ The framework has two views: a **composition model** (how actions compose agents
 │  ├─ backend-developer  │ Backend APIs, domain logic                         │
 │  ├─ frontend-developer │ UI components, forms, client state                 │
 │  ├─ ai-engineer        │ LLMs, agents, MCP, AI workflows                    │
+│  ├─ data-engineer      │ Data fabric, mapping, dedup, ETL pipelines         │
 │  ├─ quality-engineer   │ Unit, integration, E2E tests                       │
 │  └─ devops             │ Containers, compose, deployment                    │
 │                                                                             │
@@ -141,7 +142,7 @@ The framework has two views: a **composition model** (how actions compose agents
 
 ─────────────────────────────────────────────────────────────────────────────
 
-  9 Actions · 11 Agents · 1 Source of Truth (BLUEPRINT.md, per product)
+  9 Actions · 12 Agents · 1 Source of Truth (BLUEPRINT.md, per product)
 ```
 
 ### Consumption model
