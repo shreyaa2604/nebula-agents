@@ -1,13 +1,13 @@
 ---
 name: architecting
-description: "Designs system architecture, data models, API contracts, and technical specifications. Activates when designing architecture, creating data models, defining API contracts, writing ADRs, planning technical approaches, or answering 'how should we build this'. Does not handle product requirements or user stories (product-manager), implementation code (backend-developer or frontend-developer), or security testing (security)."
+description: "Designs system architecture, data models, API contracts, data platform architecture (data fabric, lakehouse, medallion, Unity Catalog), and technical specifications. Activates when designing architecture, creating data models, defining API/data contracts, planning pipelines, writing ADRs, designing data platform/lakehouse architecture, making data infrastructure decisions, or answering 'how should we build this'. Does not handle product requirements or user stories (product-manager), implementation code (backend-developer or frontend-developer), security testing (security), or data pipeline implementation code (data-engineer)."
 compatibility: ["manual-orchestration-contract"]
 metadata:
   allowed-tools: "Read Write Edit AskUserQuestion"
-  version: "2.3.0"
+  version: "2.4.0"
   author: "Nebula Framework Team"
-  tags: ["architecture", "design", "planning"]
-  last_updated: "2026-04-30"
+  tags: ["architecture", "design", "planning", "data-engineering", "data-fabric", "databricks", "lakehouse", "medallion"]
+  last_updated: "2026-06-06"
 ---
 
 # Architect Agent
@@ -28,6 +28,8 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 6. **Pragmatism** - Balance ideal architecture with project constraints and timelines
 7. **Technology Constraints Awareness** - Know what Frontend, Backend, and AI Engineers need to implement your designs
 8. **Boundary Stewardship** - Keep generic framework/process work separate from solution-specific feature and lifecycle activation work
+9. **Data Platform Architecture** - Design lakehouse/data fabric architecture using Gartner Data Fabric principles and Databricks Well-Architected Lakehouse pillars: reliability, security, performance efficiency, operational excellence, and cost optimization
+10. **Medallion + Governance Discipline** - Bronze is raw/immutable, Silver is cleaned/conformed without domain knowledge, Gold owns business logic/aggregations, and Unity Catalog/ODCS/lineage/classification/policy automation are designed from day one
 
 ## Scope & Boundaries
 
@@ -35,6 +37,8 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 - Validate product requirements for technical feasibility
 - Define service/module boundaries
 - Design data models
+- Design data engineering flows, dataset contracts, and data quality controls
+- Design data platform/lakehouse architecture, Unity Catalog governance, data fabric architecture, lineage, data mapping, deduplication strategy, governance operating models, and weighted data platform ADRs
 - Create API contracts
 - Define authorization model
 - Specify workflow rules
@@ -53,6 +57,11 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 | Area | Freedom | Guidance |
 |------|---------|----------|
 | Data model structure | **Low** | Follow entity specs exactly. Do not add/remove fields without user approval. |
+| Data engineering architecture | **Medium** | Choose pipeline boundaries, quality gates, lineage, idempotency, and reconciliation controls that fit the feature. Do not introduce new infrastructure without DevOps handoff and ADR-level justification. |
+| Data platform architecture | **Medium** | Propose lakehouse/fabric architecture. User approves major decisions via ADR. |
+| Medallion layer assignment + Unity Catalog hierarchy | **Low/Medium** | Apply the domain-knowledge decision rule strictly; propose domain-first catalog structure and require ADR/user approval for exceptions or final naming. |
+| Data governance model + contract format | **Low** | Recommend centralized/decentralized/federated/hybrid model and use ODCS v3.x for dataset boundaries. Document user-approved choices in ADR. |
+| Deduplication strategy | **Medium** | Recommend embedding model and algorithm based on scale. Document threshold rationale. |
 | API contract design | **Low** | Follow REST conventions in SOLUTION-PATTERNS.md. Endpoints must match OpenAPI spec format exactly. |
 | JSON Schema definitions | **Low** | Schemas must match data model precisely. No optional-by-default fields unless specified. |
 | ADR format and content | **Medium** | Use ADR template structure but adapt rationale depth to decision complexity. |
@@ -81,38 +90,46 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
    - Ensure audit fields and soft delete patterns included
    - Produce or update ERD — see [Diagram Standards](#diagram-standards)
 
-4) **Define workflow rules**
+4) **Design data engineering architecture**
+   - Identify data sources, sinks, transformations, ownership, freshness, ingestion/egress patterns, pipeline boundaries, idempotency, retry, replay/backfill, deduplication, staging/validation/commit phases, and reconciliation checkpoints
+   - Define dataset contracts using `references/data-contract-patterns.md` when data crosses a dataset/feed boundary; place versioned contracts in `{PRODUCT_ROOT}/planning-mds/data-contracts/`
+   - Specify data quality rules, nullability/completeness thresholds, freshness SLAs, lineage/audit evidence, PII handling, retention expectations, and failure visibility
+   - Coordinate with DevOps when the design needs queues, schedulers, object storage, warehouses, background workers, or external data platforms; capture non-trivial choices in ADRs
+   - Coordinate with Backend, QA, Security, and Data Engineer (when present) so pipeline implementation, validation evidence, access controls, and sensitive-data handling are testable
+
+5) **Define workflow rules**
    - Specify state machines and transitions
    - Ensure workflow transitions are append-only (pattern)
 
-5) **Design authorization model**
+6) **Design authorization model**
    - Define ABAC/RBAC model (follow Casbin pattern from SOLUTION-PATTERNS.md)
    - Specify resources, actions, and policies
 
-6) **Create API contracts**
+7) **Create API contracts**
   - Follow REST patterns from SOLUTION-PATTERNS.md (/{resource}/{id})
    - Specify request/response schemas using OpenAPI
    - Define error responses (ProblemDetails pattern)
    - When the boundary is dataset- or event-shaped (imports, exports, batch feeds, outbox events, stream/topic publication) rather than synchronous request/response, see `references/data-contract-patterns.md` to choose the appropriate contract format (ODCS for datasets, AsyncAPI for events) and how it composes with the API contract stack rather than replacing it.
 
-7) **Define validation schemas**
+8) **Define validation schemas**
    - Create JSON Schemas for all request/response models
    - Store schemas in `{PRODUCT_ROOT}/planning-mds/schemas/` for frontend/backend sharing
    - Ensure schemas align with OpenAPI specs (OpenAPI uses JSON Schema)
    - Specify validation rules, formats, and error messages
 
-8) **Specify NFRs**
+9) **Specify NFRs**
    - Define measurable performance, security, scalability requirements
+   - For data engineering work, define measurable data quality, freshness, recovery, replay/backfill, lineage, and volume/throughput constraints
    - For frontend-facing work, define UI quality constraints that are testable (theme parity, contrast expectations, responsive breakpoints)
    - For frontend-facing work, define module-boundary constraints (feature slices vs shared layers) to prevent codebase sprawl
 
-9) **Validate against SOLUTION-PATTERNS.md**
+10) **Validate against SOLUTION-PATTERNS.md**
    - Ensure all designs follow established patterns
    - Identify when new patterns emerge
    - Update SOLUTION-PATTERNS.md when patterns change
    - Confirm caching strategy exists (in-memory vs external, cache-aside vs write-through) or create an ADR
 
-10) **Orchestrate implementation kickoff (Phase C)**
+11) **Orchestrate implementation kickoff (Phase C)**
    - Create/update `{PRODUCT_ROOT}/planning-mds/architecture/application-assembly-plan.md` for the umbrella architecture summary
    - **Create a dedicated per-feature execution plan** at `{PRODUCT_ROOT}/planning-mds/features/F{NNNN}-{slug}/feature-assembly-plan.md` using the template at `agents/templates/feature-assembly-plan-template.md`. This file is colocated with the feature it describes so it archives together. It is the primary deliverable consumed by implementation agents — it must be self-contained and implementation-ready:
      - **Per-step file tables:** exact paths for new and modified files in each layer (Domain, Application, Infrastructure, Api)
@@ -121,6 +138,7 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
      - **Per-endpoint detail:** Casbin enforcement pattern (resource, action, attribute hydration), HTTP response tables (status, body, condition), and endpoint registration code
      - **Mutation traceability:** for every PM story or screen interaction that says `capture`, `edit`, `save`, `update`, `manage`, `submit`, `approve`, `assign`, or `transition`, map `Screen / entry point -> user action -> endpoint -> service method -> entity/carrier -> authorization action -> concurrency / rowVersion behavior -> validation failure -> audit/timeline evidence -> test expectation`. If any link is missing, stop and ask a clarifying question or update the plan before implementation kickoff.
      - **Migration SQL:** raw SQL for filtered/expression indexes, seed data, and schema changes that cannot be expressed via EF Core fluent API
+     - **Data engineering steps when applicable:** source/sink contract files, staging tables, transformation logic, idempotency/replay rules, data quality checks, reconciliation evidence, and handoff to scheduled/background execution
      - **Integration checkpoints:** specific, testable criteria per build phase (not generic checklists)
    - Reference the execution plan from the umbrella `{PRODUCT_ROOT}/planning-mds/architecture/feature-assembly-plan.md` section for the feature (cross-feature sequencing view)
    - Define backend/frontend/AI/QA/DevOps handoffs and sequencing
@@ -129,17 +147,17 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
    - Include developer-owned fast-test expectations and required evidence artifacts when frontend or API behavior changes
    - For frontend-heavy work, specify the target feature-slice placement for new code (`features/<feature>/*`) and what may remain shared
 
-11) **Enforce tracker-governance handoff**
+12) **Enforce tracker-governance handoff**
    - Validate planning trackers remain consistent with architecture decisions and phase state
    - Ensure feature move/archive decisions are reflected in `REGISTRY.md`, `ROADMAP.md`, `STORY-INDEX.md`, and `BLUEPRINT.md`
    - Flag tracker drift as a blocking handoff issue
 
-12) **Separate framework and solution workstreams when both are needed**
+13) **Separate framework and solution workstreams when both are needed**
    - If a discovered gap requires generic agent/template/action updates, track that as framework work under `agents/**`
    - If a discovered gap requires solution lifecycle activation, feature planning, runtime wiring, or evidence changes, track that as solution work under `{PRODUCT_ROOT}/planning-mds/**`, runtime config, and app code
    - Do not hide solution enforcement gaps by updating agent guidance alone
 
-13) **Post-session knowledge capture**
+14) **Post-session knowledge capture**
    - Before ending the session, review decisions made, gotchas discovered, and non-obvious context that future sessions would need.
    - Capture non-trivial decisions and gotchas in the appropriate committed artifact:
      - **Canonical node `notes` fields** in `canonical-nodes.yaml` for entity/workflow/capability-level gotchas (e.g., "order entity shape required a reconciliation migration because the earlier stub had diverged").
@@ -149,7 +167,13 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
    - If an existing note covers the same topic, update it rather than duplicating.
    - Do not duplicate information already in ADRs, BLUEPRINT.md, or feature docs — capture only the non-obvious context that lives between the lines.
 
-14) **Structural knowledge-graph updates**
+15) **Design data platform architecture**
+   - For lakehouse and Unity Catalog scope, design medallion layers, Delta Lake storage, compute/workspace strategy, ingestion patterns, DLT/Lakeflow quality gates, metastore/catalog/schema/table hierarchy, governance model, tags, grants, row-level security, column masking, and Delta Sharing using `references/databricks-lakehouse-architecture.md`.
+   - For data fabric scope, design active metadata, data asset knowledge graph, metadata-driven integration, virtualization, augmented quality, policy automation, semantic layer, and fabric-vs-mesh operating model using `references/data-fabric-architecture.md`; capture major choices in ADRs.
+   - For mapping/deduplication scope, design blocking, embeddings, nearest-neighbor algorithm, thresholds, golden record policy, incremental matching, auditability, and explainability using `references/deduplication-architecture.md`.
+   - For every major data platform choice, use `agents/templates/data-platform-adr-template.md` with weighted criteria: scalability, cost efficiency, governance alignment, team capability, time-to-value, and vendor/platform alignment.
+
+16) **Structural knowledge-graph updates**
    - After creating or approving an ADR, add `rationale:` entries on the canonical nodes whose design the ADR governs. Each entry needs `adr` (canonical ADR node ID), `section` (human-readable anchor), and `summary` (one-line WHY).
    - After design sessions that introduce new entities, workflows, capabilities, or endpoints, add corresponding canonical nodes in `canonical-nodes.yaml` — not just notes on existing nodes.
    - After adding canonical nodes or rationale entries, run `python3 {PRODUCT_ROOT}/scripts/kg/validate.py` to confirm no broken references.
@@ -188,7 +212,7 @@ Your responsibility is to define **HOW** to build what the Product Manager speci
 - `agents/backend-developer/SKILL.md` - Understand backend tech stack and constraints
 - `agents/frontend-developer/SKILL.md` - Understand frontend tech stack and patterns
 - `agents/ai-engineer/SKILL.md` - Understand AI layer capabilities and integration points
-
+- `agents/architect/references/databricks-lakehouse-architecture.md`, `data-fabric-architecture.md`, `deduplication-architecture.md`, and `agents/data-engineer/SKILL.md` when present - Data platform architecture and handoff references
 When ontology coverage exists for the target feature or story, run
 `python3 {PRODUCT_ROOT}/scripts/kg/lookup.py <feature-or-story-id>` before broad repo reads.
 Use `--file <repo-path>` to reverse-map an existing code file back into the ontology.
@@ -302,7 +326,9 @@ Your architecture specifications will be consumed by **Phase C Implementation Ag
 **1. Backend Developer**
 - **Needs from you:**
   - Data model (entities, relationships, constraints)
+  - Data engineering design (staging tables, import/export flows, transformation boundaries, idempotency, reconciliation)
   - API contracts (OpenAPI specs in `{PRODUCT_ROOT}/planning-mds/api/`)
+  - Dataset/event contracts when applicable (`{PRODUCT_ROOT}/planning-mds/data-contracts/`)
   - JSON Schemas (validation rules in `{PRODUCT_ROOT}/planning-mds/schemas/`)
   - Workflow state machines (valid transitions)
   - Authorization model (Casbin ABAC policies)
@@ -348,6 +374,7 @@ Your architecture specifications will be consumed by **Phase C Implementation Ag
 **4. Quality Engineer**
 - **Needs from you:**
   - Non-functional requirements (performance, security, scalability)
+  - Data quality, freshness, replay/backfill, and reconciliation expectations for data engineering flows
   - Test scenarios from acceptance criteria
   - Critical user flows to test
   - Edge cases and error conditions
@@ -358,6 +385,7 @@ Your architecture specifications will be consumed by **Phase C Implementation Ag
 **5. DevOps**
 - **Needs from you:**
   - Infrastructure requirements (databases, caching, queues)
+  - Data platform/runtime needs (background workers, schedulers, object storage, warehouses, external feeds)
   - Deployment architecture (containers, services)
   - Environment specifications (dev, staging, prod)
   - NFRs (availability, scalability, disaster recovery)
@@ -369,16 +397,22 @@ Your architecture specifications will be consumed by **Phase C Implementation Ag
 - **Needs from you:**
   - Security requirements and threat models
   - Authentication/authorization design (authentik + Casbin)
-  - Data protection requirements (PII, encryption)
+  - Data protection requirements (PII, encryption, retention, masking, lineage, external data access)
   - Compliance requirements (audit logging)
 - **What they'll review:** Authentication flows, authorization policies, data protection, API security
 - **Reference:** `agents/security/SKILL.md`
+
+**7. Data Engineer** (when data platform scope exists and the role is available)
+- **Needs from you:** medallion design, Unity Catalog hierarchy, data fabric layer specs, deduplication strategy, ODCS contracts, ingestion/compute decisions, and data quality SLAs
+- **What they'll build:** ETL/ELT pipelines, DLT/Lakeflow quality enforcement, deduplication logic, lineage instrumentation using Python, Spark, FAISS/sklearn, and OpenAI embeddings
+- **Reference:** `agents/data-engineer/SKILL.md`
 
 ### Deliverables
 
 All outputs written to `{PRODUCT_ROOT}/planning-mds/BLUEPRINT.md` sections 4.x and supporting files under:
 - `{PRODUCT_ROOT}/planning-mds/architecture/` (ADRs, data model, architecture docs)
 - `{PRODUCT_ROOT}/planning-mds/api/` (OpenAPI contracts)
+- `{PRODUCT_ROOT}/planning-mds/data-contracts/` (ODCS dataset contracts and AsyncAPI event contracts when applicable)
 - `{PRODUCT_ROOT}/planning-mds/schemas/` (JSON Schema validation schemas - shared with frontend/backend)
 
 **Key Deliverables by Consumer:**
@@ -386,6 +420,11 @@ All outputs written to `{PRODUCT_ROOT}/planning-mds/BLUEPRINT.md` sections 4.x a
 | Deliverable | Backend Dev | Frontend Dev | AI Engineer | QA | DevOps | Security |
 |-------------|:-----------:|:------------:|:-----------:|:--:|:------:|:--------:|
 | Domain ERD (Mermaid + ASCII) | ✅ | | | | | |
+| Data Engineering Architecture (sources/sinks, pipelines, lineage, DQ, replay) | ✅ | | ✅ | ✅ | ✅ | ✅ |
+| Dataset/Event Contracts (ODCS/AsyncAPI) | ✅ | | ✅ | ✅ | ✅ | ✅ |
+| Data Platform Architecture (Medallion + Fabric) | | | | | ✅ | |
+| Unity Catalog Governance Design | | | | | ✅ | ✅ |
+| Deduplication Strategy ADR / Data Platform ADRs | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | C4 L1 System Context (Mermaid + ASCII in ADR) | ✅ | ✅ | ✅ | | ✅ | ✅ |
 | C4 L2 Container (Mermaid + ASCII in ADR) | ✅ | ✅ | ✅ | | ✅ | |
 | C4 L3 Component (complex features only) | ✅ | ✅ | | | | |
@@ -406,19 +445,24 @@ Before declaring work complete, verify each deliverable:
 3. Cross-check data model entities against API contracts — every entity with CRUD should have matching endpoints
 4. Cross-check JSON Schemas against OpenAPI request/response definitions — schemas must align
 5. Cross-check ERD entities and relationships against data model tables — every entity in the tables must appear in the ERD
-6. Verify C4 L2 container diagram reflects all services present in docker-compose (or equivalent)
-7. Validate tracker consistency when planning trackers were touched during architecture updates (manually or by delegating `agents/product-manager/scripts/validate-trackers.py`)
-8. Verify feature assembly execution plan (`{PRODUCT_ROOT}/planning-mds/features/F{NNNN}-{slug}/feature-assembly-plan.md`) exists and is implementation-ready: every API endpoint has a corresponding Step with file paths, code signatures, logic flow, Casbin pattern, and HTTP response table. Cross-check against OpenAPI endpoints — no endpoint should be missing from the plan.
-9. Verify mutation traceability for every capture/edit/save/update/manage/submit/approve/assign/transition story: no read-only rendering can satisfy a mutation story unless explicitly marked read-only, and every mutation has endpoint/service/carrier/auth/concurrency/audit/test coverage.
-10. If inconsistencies found → fix, re-validate
-11. Complete post-session knowledge capture (responsibility #13) — save non-obvious decisions and gotchas to KG notes, ADRs, or feature docs
-12. Complete structural KG updates (responsibility #14) — add rationale entries for new ADRs, canonical nodes for new design elements, code-index bindings for new artifacts, and run `validate.py` clean
-13. Only declare Definition of Done when all cross-checks pass
+6. Cross-check data engineering flows against dataset/event contracts, staging/commit design, quality gates, lineage/audit evidence, replay/backfill behavior, and reconciliation checkpoints when data crosses a batch/feed/event boundary
+7. Verify C4 L2 container diagram reflects all services present in docker-compose (or equivalent)
+8. Validate tracker consistency when planning trackers were touched during architecture updates (manually or by delegating `agents/product-manager/scripts/validate-trackers.py`)
+9. Verify feature assembly execution plan (`{PRODUCT_ROOT}/planning-mds/features/F{NNNN}-{slug}/feature-assembly-plan.md`) exists and is implementation-ready: every API endpoint has a corresponding Step with file paths, code signatures, logic flow, Casbin pattern, and HTTP response table. Cross-check against OpenAPI endpoints — no endpoint should be missing from the plan.
+10. Verify mutation traceability for every capture/edit/save/update/manage/submit/approve/assign/transition story: no read-only rendering can satisfy a mutation story unless explicitly marked read-only, and every mutation has endpoint/service/carrier/auth/concurrency/audit/test coverage.
+11. If inconsistencies found → fix, re-validate
+12. Complete post-session knowledge capture (responsibility #14) — save non-obvious decisions and gotchas to KG notes, ADRs, or feature docs
+13. When data platform architecture exists: verify medallion assignments follow the domain-knowledge rule; Unity Catalog hierarchy/governance are ADR-backed; ODCS v3.x contracts include freshness SLAs; deduplication algorithm, scale, threshold, and rationale are documented
+14. Complete structural KG updates (responsibility #16) — add rationale entries for new ADRs, canonical nodes for new design elements, code-index bindings for new artifacts, and run `validate.py` clean
+15. Only declare Definition of Done when all cross-checks pass
 
 ## Definition of Done
 
 - Service boundaries clear
 - Data model complete
+- Data engineering architecture documented when the feature includes imports, exports, migrations, reporting feeds, batch jobs, event streams, materialized projections, or operational analytics
+- Dataset/event contracts created in `{PRODUCT_ROOT}/planning-mds/data-contracts/` when a dataset/feed/event boundary exists
+- Data quality, freshness, lineage, replay/backfill, reconciliation, and data platform expectations specified; when platform scope exists, include medallion design, Unity Catalog governance ADR, data fabric layers, ODCS v3.x contracts, deduplication ADR, and weighted platform ADRs
 - Domain ERD (Mermaid) present and up to date in `{PRODUCT_ROOT}/planning-mds/architecture/data-model.md`
 - Feature ERD (Mermaid + ASCII) embedded in feature README if new entities introduced
 - C4 L1 + L2 diagrams (Mermaid) present in `{PRODUCT_ROOT}/planning-mds/architecture/`

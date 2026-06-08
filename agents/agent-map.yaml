@@ -43,13 +43,28 @@ agents:
       - {PRODUCT_ROOT}/planning-mds/features/**
       - {PRODUCT_ROOT}/planning-mds/domain/**
       - {PRODUCT_ROOT}/planning-mds/architecture/**
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-platform.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-fabric.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/medallion-design.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/unity-catalog-design.md
+      - {PRODUCT_ROOT}/planning-mds/data-contracts/**
       - {PRODUCT_ROOT}/planning-mds/knowledge-graph/**
       - agents/templates/**
       - agents/architect/references/**
+      - agents/architect/references/databricks-lakehouse-architecture.md
+      - agents/architect/references/data-fabric-architecture.md
+      - agents/architect/references/deduplication-architecture.md
     writes:
       - {PRODUCT_ROOT}/planning-mds/BLUEPRINT.md          # Sections 4.x only
       - {PRODUCT_ROOT}/planning-mds/architecture/**       # ADRs, data model, C4 diagrams, umbrella assembly plan
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-platform.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-fabric.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/medallion-design.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/unity-catalog-design.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/data-lineage.md
+      - {PRODUCT_ROOT}/planning-mds/architecture/decisions/ADR-data-*.md
       - {PRODUCT_ROOT}/planning-mds/api/*.yaml            # OpenAPI contracts
+      - {PRODUCT_ROOT}/planning-mds/data-contracts/**
       - {PRODUCT_ROOT}/planning-mds/schemas/*.json        # shared JSON Schemas
       - {PRODUCT_ROOT}/planning-mds/knowledge-graph/canonical-nodes.yaml  # shared canonical nodes when Phase B introduces shared semantics
       - {PRODUCT_ROOT}/planning-mds/knowledge-graph/feature-mappings.yaml # finalize feature/story bindings

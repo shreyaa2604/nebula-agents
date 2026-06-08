@@ -31,6 +31,10 @@ when the full reference corpus is explicitly requested.
 | Performance, scaling, caching | `references/performance-design-guide.md` |
 | Service boundaries, module design | `references/service-architecture-patterns.md` |
 | AI/ML integration architecture | `references/ai-integration-patterns.md`, `references/ai-architecture-patterns.md` |
+| Data platform / lakehouse / medallion architecture design | `references/databricks-lakehouse-architecture.md` |
+| Data fabric architecture, governance model, metadata catalog | `references/data-fabric-architecture.md` |
+| Deduplication strategy, entity resolution, embedding architecture | `references/deduplication-architecture.md` |
+| Dataset contracts (ODCS), data boundary design | `references/data-contract-patterns.md` |
 | General architecture review, ADR | `references/architecture-best-practices.md` |
 | Architecture examples | `references/architecture-examples.md` |
 

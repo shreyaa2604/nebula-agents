@@ -1,0 +1,74 @@
+# ODCS v3.x Data Contract
+dataContractSpecification: 3.0.0
+
+id: "dc-{domain}-{dataset}-{version}"
+info:
+  title: "[Dataset Name]"
+  version: "1.0.0"
+  description: "[What this dataset contains and its purpose]"
+  owner: "[team/person]"
+  contact:
+    name: "[contact name]"
+    email: "[contact email]"
+
+servers:
+  production:
+    type: "databricks"
+    catalog: "[unity_catalog_name]"
+    schema: "[schema_name]"
+    table: "[table_name]"
+
+terms:
+  usage: "[How consumers may use this data]"
+  limitations: "[Restrictions on use]"
+  billing: "[Cost model if applicable]"
+
+schema:
+  type: "table"
+  fields:
+    - name: "[field_name]"
+      type: "[string|integer|decimal|date|timestamp|boolean|array]"
+      description: "[Business meaning]"
+      required: true
+      primaryKey: false
+      classification: "[public|internal|confidential|restricted]"
+      pii: false
+      example: "[example value]"
+
+quality:
+  type: "custom"
+  rules:
+    - name: "completeness_check"
+      description: "[Required fields must not be null]"
+      dimension: "completeness"
+      severity: "critical"
+      query: "SELECT COUNT(*) FROM {table} WHERE {field} IS NULL"
+      threshold: 0
+    - name: "freshness_check"
+      description: "[Data must be updated within SLA]"
+      dimension: "timeliness"
+      severity: "critical"
+      freshnessThreshold: "PT1H"
+    - name: "uniqueness_check"
+      description: "[Primary key must be unique]"
+      dimension: "uniqueness"
+      severity: "critical"
+      query: "SELECT COUNT(*) - COUNT(DISTINCT {pk}) FROM {table}"
+      threshold: 0
+
+servicelevels:
+  availability: "99.9%"
+  freshness:
+    threshold: "PT1H"
+    schedule: "*/15 * * * *"
+  quality:
+    completeness: ">=99.5%"
+    accuracy: ">=99%"
+
+lineage:
+  upstream:
+    - name: "[source_dataset]"
+      type: "[database|api|file|stream]"
+  downstream:
+    - name: "[consuming_dataset_or_service]"
+      usage: "[analytics|ml|api|reporting]"
